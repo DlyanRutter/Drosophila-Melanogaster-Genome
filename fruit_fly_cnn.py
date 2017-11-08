@@ -88,6 +88,87 @@ def one_hot_sklearn1(labels):
     return lb.fit_transform(np.array(labels))
     #return lb.transform(labels)
 
+def load_batch(path, batch_id):
+    """
+    load a batch of dataset
+    """
+    with open(path + '/data_batch_' + str(batch_id), mode='rb') as file:
+        batch = pickle.load(file, encoding='latin1')
+
+    features = batch['data'].reshape((len(batch['data']), n_channels,
+                                      pixel_height, pixel_width)).transpose(
+                                          0,2,3,1)
+    labels = batch['labels']
+    return features, labels
+
+def _preprocess_and_save(normalize, one_hot_encode, features, labels, filename):
+    """
+    preprocess data and save it to a file
+    """
+    features = normalize(features)
+    labels = one_hot_encode(labels)
+    pickle.dump((features, labels), open(filename, 'wb'))
+
+def preprocess_and_save(path, normalize, one_hot_encode, n_batches=5,
+                        pixel_height=32, pixel_width=32, n_channels=3):
+    """
+    preprocesses training and validation data
+    """
+    valid_features = []
+    valid_labels = []
+
+    for batch_i in range(1, n_batches + 1):
+        features, lables = load_batch(path, batch_i)
+        validation_count = int(len(features) * 0.1)
+
+        _preprocess_and_save(
+            normalize,
+            one_hot_encode,
+            features[:-validation_count],
+            labels[:-validation_count],
+            'preprocess_batch_' + str(batch_i) + '.p')
+
+        valid_features.extend(features[-validation_count:]) ###### extend?
+        valid_labels.extend(labels[-validation_count:])
+
+    _preprocess_and_save(
+        normalize,
+        one_hot_encode,
+        np.array(valid_features),
+        np.array(valid_labels),
+        'preprocess_validation.p')
+
+    with open(path + '/test_batch', mode='rb') as file:
+        batch = pickle.load(file, encoding='latin1')
+
+    test_features = batch['data'].reshape((len(batch['data']), n_channels,
+                                           pixel_height,pixel_width)).transpose(
+                                               (0, 2, 3, 1))
+    test_labels = batch['labels']
+    _preprocess_and_save(
+        normalize,
+        one_hot_encode,
+        np.array(test_features),
+        np.array(test_labels),
+        'preprocess_test.p')
+                                               
+def make_batches(features, labels, batch_size):
+    """
+    split features and labels into batches.
+    """
+    for start in range(0, len(features), batch_size):
+        end = min(start + batch_size, len(features))
+        yield features[start:end], labels[start:end]
+
+def load_training_batch(batch_id, batch_size):
+    """
+    load preprocessed training data and return them in batches of batch_size
+    or less.
+    """
+    filename = 'preprocess_batch_' + str(batch_id) + '.p'
+    features, labels = pickle.load(open(filename, mode='rb'))
+    return load_training_batch(features, labels, batch_size)    
+    
 def neural_net_image_input(img_shape):
     """
     returns a tf placeholder with shape = image shape and batch size = None
