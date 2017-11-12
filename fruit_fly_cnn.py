@@ -350,19 +350,17 @@ def print_stats(session, feature_batch, label_batch, cost, accuracy,
         loss,
         valid_acc))      
 
-#labelz = ['yes', 'no', 'yes', 'no', 'yes', 'maybe']
-#labelz.reverse()
-#print one_hot_encode(labelz)
-#print type(labelz)
-labels = [10, 15, 1, 11, 14]
-print _one_hot_encode(labels)
-#print one_hot_sklearn(labelz)
 
 fruit_fly_tests.test_normalize(normalize)
-#fruit_fly_tests.test_one_hot_encode(one_hot_encode)
+fruit_fly_tests.test_one_hot_encode(one_hot_encode)
 fruit_fly_tests.test_nn_image_inputs(neural_net_image_input)
 fruit_fly_tests.test_nn_label_inputs(neural_net_label_input)
 fruit_fly_tests.test_nn_keep_prob_inputs(neural_net_keep_prob_input)
 fruit_fly_tests.test_con_pool(conv2d_maxpool)
 fruit_fly_tests.test_flatten(flatten)
+fruit_fly_tests.test_fully_conn(fully_conn)
+fruit_fly_tests.test_output(output)
+fruit_fly_tests.test_conv_net(conv_net)
+fruit_fly_tests.test_train_nn(train_neural_network)
+
 
