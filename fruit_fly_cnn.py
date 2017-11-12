@@ -300,7 +300,55 @@ def conv_net(img, keep_prob, num_classes=10):
     x = fully_conn(x, 180, keep_prob=0.75)
     x = fully_conn(x, 32, keep_prob=0.5)
 
-    return output(x, num_classes)                        
+    return output(x, num_classes)
+
+def train_neural_network(session, optimizer, keep_probability, feature_batch,
+                         label_batch, num_labels=10):
+    """
+    Optimize a single session on a batch of images and labels. session is the
+    current TensorFlow session. optimizer is the TensorFlow optimizer
+    function. keep_probability is the keep_probability, feature_batch is
+    the batch of numpy image data. label_batch is the batch of numpy
+    label data.
+
+    use optimizer to optimize in session with a feed dict having the following:
+    x for image input, y for labels, keep_prob for keep probability for
+    dropout. function will be called for each batch, so
+    tf.global_variables_initializer() has already been called. Nothing returned
+
+    'x' refers to the name factor in neural_net_image_input function
+    'y' refers to the name factor in neural_net_label_input function
+    'keep_prob' refers to the name factor in neural_net_keep_prob_input function
+    """
+
+    session.run(optimizer, feed_dict={
+        'x':feature_batch,
+        'y':label_batch,
+        'keep_prob':keep_probability})
+    pass
+
+def print_stats(session, feature_batch, label_batch, cost, accuracy,
+                test_valid_size=258):
+    """
+    print loss and validation accuracy. use global variables valid_features
+    and valid_labels to calculate validation accuracy. use keep probability
+    of 1.0 to calculate loss and validation accuracy
+    """
+    loss = session.run(cost, feed_dict={
+        x:feature_batch,
+        y:label_batch,
+        keep_prob:1.0})
+    valid_acc = session.run(accuracy, feed_dict={
+        x:valid_features[:test_valid_size],
+        y:valid_labels[:test_valid_size],
+        keep_prob:1.0})
+        
+    print('Epoch {:>2}, Batch {:>3} -'
+        'Loss: {:>10.4f} Validation Accuracy: {:.6f}'.format(
+        epoch + 1,
+        batch + 1,
+        loss,
+        valid_acc))      
 
 #labelz = ['yes', 'no', 'yes', 'no', 'yes', 'maybe']
 #labelz.reverse()
@@ -317,3 +365,4 @@ fruit_fly_tests.test_nn_label_inputs(neural_net_label_input)
 fruit_fly_tests.test_nn_keep_prob_inputs(neural_net_keep_prob_input)
 fruit_fly_tests.test_con_pool(conv2d_maxpool)
 fruit_fly_tests.test_flatten(flatten)
+
