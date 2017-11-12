@@ -348,7 +348,27 @@ def print_stats(session, feature_batch, label_batch, cost, accuracy,
         epoch + 1,
         batch + 1,
         loss,
-        valid_acc))      
+        valid_acc))
+
+epochs=30
+batch_size=20
+keep_probability=.5
+
+with tf.session() as sess:
+    sess.run(tf.global_variables_initializer())
+    for epoch in range(epochs):
+        n_batches=5
+        for batch_i in range(1, n_batches + 1):
+            for batches_features, batch_labels in load_training_batch(
+                batch_i, batch_size):
+                train_neural_network(sess, optimizer, keep_probability,
+                                     batch_features, batch_labels)
+                print('Epoch {:>2}, Fruit_fly_batch{}:  '.format(
+                    epoch + 1, batch_i), end='')
+                print_stats(sess, batch_features, batch_labels, cost, accuracy)
+    saver = tf.train.Saver()
+    save_path = saver.save(sess, save_model_path) #needed variable
+
 
 
 fruit_fly_tests.test_normalize(normalize)
