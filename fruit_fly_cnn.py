@@ -257,7 +257,50 @@ def flatten(x_tensor):
     shape = x_tensor.get_shape().as_list()
     return tf.reshape(x_tensor, [-1, shape[1] * shape[2] * shape[3]])
     
-                        
+def fully_conn(x_tensor, n_outputs, keep_prob=0.5):
+    """
+    apply a fully connected layer to x_tensor using weight and bias. x_tensor
+    is a 2-D tensor where first dim is batch_size, n_outputs is the number of
+    output that the new tensor should be. Returns a 2-D tensor where the
+    second dim is num_outputs. (Input and output are both flattened). dropout
+    is the dropout probability, and size is the batch size.
+    """
+    weights = tf.Variable(tf.truncated_normal(
+        [x_tensor.get_shape().as_list()[1], n_outputs], dtype=tf.float32))
+    bias = tf.zeros([n_outputs], dtype=tf.float32)
+    fully = tf.add(tf.matmul(x_tensor, weights), bias)
+    fully = tf.nn.relu(fully)
+    fully = tf.nn.dropout(fully,keep_prob=keep_prob)
+    return fully
+
+def output(x_tensor, n_outputs):
+    """
+    Apply an output layer to x_tensor using weight and bias. x_tensor is
+    a 2-D tensor where the first dimension is batch size. n_outputs is the
+    number of output the new tensor should be. returns a 2-D tensor where
+    the second dimension is n_outputs.
+    """
+    weights = tf.Variable(tf.truncated_normal(
+        [x_tensor.get_shape().as_list()[1], n_outputs], dtype=tf.float32))
+    bias = tf.zeros([n_outputs], dtype=tf.float32)
+    return tf.add(tf.matmul(x_tensor, weights), bias)
+
+def conv_net(img, keep_prob, num_classes=10):
+    """
+    create a convolutional neural network model. img is a placeholder tensor
+    that holds image data. keep_prob is a placeholder tensor that holds
+    dropout keep probability. num_classes is number of possible leabels.
+    returns a tensor that represents logits.
+    """
+    x = conv2d_maxpool(img, 10, (2,2), (4,4), (2,2), (2,2))
+    x = conv2d_maxpool(x, 32, (2,2), (2,2), (2,2), (2,2))
+    x = conv2d_maxpool(x, 65, (2,2), (3,3), (2,2), (2,2))
+
+    x = flatten(x)
+    x = fully_conn(x, 180, keep_prob=0.75)
+    x = fully_conn(x, 32, keep_prob=0.5)
+
+    return output(x, num_classes)                        
 
 #labelz = ['yes', 'no', 'yes', 'no', 'yes', 'maybe']
 #labelz.reverse()
