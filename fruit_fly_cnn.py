@@ -3,6 +3,45 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, LabelBinarizer
 import fruit_fly_tests, math
 
+train_dir = '/Users/dylanrutter/Downloads/train'
+test_dir = '/Users/dylanrutter/Downloads/test'
+save_path = '/Users/dylanrutter/Desktop/pyhon_saves'
+
+def get_image_data(dr=train_dir,n_samples=2000,height=40,width=40,channels=3):
+    """
+    used to load images if images will be analyzed using TensorFlow. height
+    is pixel height, and width is pixel width. returns an array representing
+    image of shape [#images, height, width, channels]
+    """
+    image_files = os.listdir(dr)
+    num_imgs = 0
+    matrix = np.ndarray(shape = (n_samples,height,width, channels),
+                        dtype=np.float32)
+    
+    for img in image_files:
+        path = os.path.join(dr, img)
+        img = cv2.resize(cv2.imread(path, cv2.IMREAD_COLOR),(height, width))
+        matrix[num_imgs, :, :, :] = img
+        num_imgs = num_imgs + 1
+
+    np.save('img_train_tf', matrix)
+    return matrix
+
+def _load_label_names(module=None, Fake=True):
+    """
+    load the label names from python module. Label names must be included
+    in a function of form def labels(): return [list of label strings].
+    module input must be a string.
+    """
+    if module:
+        import module
+        labels = module.labels()
+        return labels
+    elif Fake == True:
+        return ['label1', 'label2', 'label3', 'label4', 'label5']
+    else:
+        return None
+
 def normalize(arr, fourD=True, color=True):
     """
     normalize an array. if color 4D=False array should be of shape (:,:,3). else
