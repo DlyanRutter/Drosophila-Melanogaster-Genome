@@ -1,7 +1,8 @@
 import tensorflow as tf
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, LabelBinarizer
-import fruit_fly_tests, math
+import fruit_fly_tests, math, pickle, os
 
 train_dir = '/Users/dylanrutter/Downloads/train'
 test_dir = '/Users/dylanrutter/Downloads/test'
@@ -442,7 +443,7 @@ with tf.session() as sess:
                     epoch + 1, batch_i), end='')
                 print_stats(sess, batch_features, batch_labels, cost, accuracy)
     saver = tf.train.Saver()
-    save_path = saver.save(sess, save_model_path) #needed variable
+    save_path = saver.save(sess, save_model_path) 
 
 
 
