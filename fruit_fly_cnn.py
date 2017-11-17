@@ -126,7 +126,6 @@ def one_hot_sklearn(labels):
 def one_hot_sklearn1(labels):
     lb = LabelBinarizer()
     return lb.fit_transform(np.array(labels))
-    #return lb.transform(labels)
 
 def load_batch(path, batch_id):
     """
@@ -376,7 +375,8 @@ def conv_net(img, keep_prob, num_classes=10):
     x = fully_conn(x, 180, keep_prob=0.75)
     x = fully_conn(x, 32, keep_prob=0.5)
 
-    return output(x, num_classes)
+    x = output(x, num_classes)
+    return x
 
 def train_neural_network(session, optimizer, keep_probability, feature_batch,
                          label_batch, num_labels=10):
