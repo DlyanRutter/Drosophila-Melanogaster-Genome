@@ -81,7 +81,6 @@ def test_nn_image_inputs(neural_net_image_input):
 
     print('Image Input Tests Passed.')
 
-
 def test_nn_label_inputs(neural_net_label_input):
     n_classes = 10
     nn_inputs_out_y = neural_net_label_input(n_classes)
@@ -98,7 +97,6 @@ def test_nn_label_inputs(neural_net_label_input):
 
     print('Label Input Tests Passed.')
 
-
 def test_nn_keep_prob_inputs(neural_net_keep_prob_input):
     nn_inputs_out_k = neural_net_keep_prob_input()
 
@@ -114,7 +112,6 @@ def test_nn_keep_prob_inputs(neural_net_keep_prob_input):
         'Incorrect Name.  Found {}'.format(nn_inputs_out_k.name)
 
     print('Keep Prob Tests Passed.')
-
 
 def test_con_pool(conv2d_maxpool):
     test_x = tf.placeholder(tf.float32, [None, 32, 32, 5])
@@ -134,7 +131,6 @@ def test_con_pool(conv2d_maxpool):
 
     print 'test_con_pool passed'
 
-
 def test_flatten(flatten):
     test_x = tf.placeholder(tf.float32, [None, 10, 30, 6])
     flat_out = flatten(test_x)
@@ -144,7 +140,6 @@ def test_flatten(flatten):
             flat_out.get_shape().as_list())
 
     print 'test_flatten passed'
-
 
 def test_fully_conn(fully_conn):
     test_x = tf.placeholder(tf.float32, [None, 128])
@@ -156,7 +151,6 @@ def test_fully_conn(fully_conn):
         'Incorrect Shape.  Found {} shape'.format(fc_out.get_shape().as_list())
 
     print 'test_fully_conn passed'
-
 
 def test_output(output):
     test_x = tf.placeholder(tf.float32, [None, 128])
@@ -170,7 +164,6 @@ def test_output(output):
 
     print 'test_output passed'
 
-
 def test_conv_net(conv_net):
     test_x = tf.placeholder(tf.float32, [None, 32, 32, 3])
     test_k = tf.placeholder(tf.float32)
@@ -182,7 +175,6 @@ def test_conv_net(conv_net):
             logits_out.get_shape().as_list())
 
     print('test_conv_net passed. Neural Network Built!')
-
 
 def test_train_nn(train_neural_network):
     mock_session = tf.Session()
