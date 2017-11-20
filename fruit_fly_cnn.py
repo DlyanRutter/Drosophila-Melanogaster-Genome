@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, LabelBinarizer
 import fruit_fly_tests, math, pickle, os
+import __builtin__ as builtins
 
 train_dir = '/Users/dylanrutter/Downloads/train'
 test_dir = '/Users/dylanrutter/Downloads/test'
@@ -42,7 +43,7 @@ def _load_label_names(module=None, Fake=True):
         return ['label1', 'label2', 'label3', 'label4', 'label5']
     else:
         return None
-
+        
 def normalize(arr, fourD=True, color=True):
     """
     normalize an array. if color 4D=False array should be of shape (:,:,3). else
@@ -187,7 +188,7 @@ def _preprocess_and_save(normalize, one_hot_encode, features, labels, filename):
     labels = one_hot_encode(labels)
     pickle.dump((features, labels), open(filename, 'wb'))
 
-def preprocess_and_save(path, normalize, one_hot_encode, n_batches=5,
+def preprocess_and_save_data(path, normalize, one_hot_encode, n_batches=5,
                         pixel_height=32, pixel_width=32, n_channels=3):
     """
     preprocesses training and validation data
@@ -206,7 +207,7 @@ def preprocess_and_save(path, normalize, one_hot_encode, n_batches=5,
             labels[:-validation_count],
             'preprocess_batch_' + str(batch_i) + '.p')
 
-        valid_features.extend(features[-validation_count:]) ###### extend?
+        valid_features.extend(features[-validation_count:]) 
         valid_labels.extend(labels[-validation_count:])
 
     _preprocess_and_save(
@@ -230,7 +231,7 @@ def preprocess_and_save(path, normalize, one_hot_encode, n_batches=5,
         np.array(test_labels),
         'preprocess_test.p')
                                                
-def make_batches(features, labels, batch_size):
+def batch_features_labels(features, labels, batch_size):
     """
     split features and labels into batches.
     """
@@ -238,15 +239,15 @@ def make_batches(features, labels, batch_size):
         end = min(start + batch_size, len(features))
         yield features[start:end], labels[start:end]
 
-def load_training_batch(batch_id, batch_size):
+def load_preprocess_training_batch(batch_id, batch_size):
     """
     load preprocessed training data and return them in batches of batch_size
     or less.
     """
     filename = 'preprocess_batch_' + str(batch_id) + '.p'
     features, labels = pickle.load(open(filename, mode='rb'))
-    return load_training_batch(features, labels, batch_size)    
-    
+    return load_training_batch(features, labels, batch_size)
+
 def neural_net_image_input(img_shape):
     """
     returns a tf placeholder with shape = image shape and batch size = None
@@ -254,14 +255,14 @@ def neural_net_image_input(img_shape):
     """
     return tf.placeholder(tf.float32, shape=\
                           [None,img_shape[0],img_shape[1],img_shape[2],],\
-                           name='x')
+                           name="x")
 
 def neural_net_label_input(n_classes):
     """
     returns a tf placeholder with shape = n_classes and batch size = None
     name the placeholder "y" using name parameter in tf.placeholder
     """
-    return tf.placeholder(tf.float32, shape=[None, n_classes], name='y')
+    return tf.placeholder(tf.float32, shape=[None, n_classes], name="y")
 
 def neural_net_keep_prob_input():
     """
@@ -329,8 +330,9 @@ def conv2d_maxpool(x, conv_outputs, conv_k, conv_strides, pool_k,\
 
 def flatten(x_tensor):
     """
-    flatten x_tensor from a 4D tensor to a 2D tensor. e.g. (batch_size,height..) to
-    to (batch_size, flattened). flatten comes from height*width*depth
+    flatten x_tensor from a 4D tensor to a 2D tensor. e.g.
+    (batch_size,height..) to (batch_size, flattened).
+    flatten comes from height*width*depth
     """
     shape = x_tensor.get_shape().as_list()
     return tf.reshape(x_tensor, [-1, shape[1] * shape[2] * shape[3]])
@@ -378,8 +380,27 @@ def conv_net(img, keep_prob, num_classes=10):
     x = fully_conn(x, 180, keep_prob=0.75)
     x = fully_conn(x, 32, keep_prob=0.5)
 
-    x = output(x, num_classes)
-    return x
+    return output(x, num_classes)
+
+"""
+tf.reset_default_graph()
+im_shape = (12, 32, 32, 3)#change
+n_classes=10#change
+
+x = neural_net_image_input((im_shape))
+y = neural_net_label_input(n_classes)
+keep_prob = neural_net_keep_prob_input()
+
+logits = conv_net(x, keep_prob, num_classes=n_classes)
+logits = tf.identity(logits, name='logits')
+
+loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
+    logits=logits, labels=y))
+optimizer = tf.train.AdamOptimizer().minimize(loss)
+
+correct_pred = tf.equal(tf.argmax(logits,1), tf.argmax(y,1))
+accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32), name='accuracy')
+"""
 
 def train_neural_network(session, optimizer, keep_probability, feature_batch,
                          label_batch, num_labels=10):
@@ -429,11 +450,46 @@ def print_stats(session, feature_batch, label_batch, cost, accuracy,
         loss,
         valid_acc))
 
+def display_image_predictions(features, labels, predictions):
+    """
+    plots image predictions
+    """
+    n_classes = 10
+    label_names = _load_label_names()
+    label_binarizer = LabelBinarizer()
+    label_binarizer.fit(range(n_classes))
+    label_ids = label_binarizer.inverse_transform(np.array(labels))
+
+    fig, axies = plt.subplots(nrows=4, ncols=2)
+    fig.tight_layout()
+    fig.suptitle('Softmax Predictions', fontsize=20, y=1.1)
+
+    n_predictions = 3
+    margin = 0.05
+    ind = np.arange(n_predictions)
+    width = (1. - 2. * margin) / n_predictions
+
+    for image_i, (feature, label_id, pred_indicies, pred_values) in\
+        enumerate(zip(features, label_ids, predictions.indices,\
+                      predictions.values)):
+        pred_names = [label_names[pred_i] for pred_i in pred_indicies]
+        correct_name = label_names[label_id]
+
+        axies[image_i][0].imshow(feature)
+        axies[image_i][0].set_title(correct_name)
+        axies[image_i][0].set_axis_off()
+
+        axies[image_i][1].barh(ind + margin, pred_values[::-1], width)
+        axies[image_i][1].set_yticks(ind + margin)
+        axies[image_i][1].set_yticklabels(pred_names[::-1])
+        axies[image_i][1].set_xticks([0, 0.5, 1.0])
+
+
 epochs=30
 batch_size=20
 keep_probability=.5
-
-with tf.session() as sess:
+"""
+with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     for epoch in range(epochs):
         n_batches=5
@@ -443,15 +499,14 @@ with tf.session() as sess:
                 train_neural_network(sess, optimizer, keep_probability,
                                      batch_features, batch_labels)
                 print('Epoch {:>2}, Fruit_fly_batch{}:  '.format(
-                    epoch + 1, batch_i), end='')
+                    epoch + 1, batch_i, end=''))
                 print_stats(sess, batch_features, batch_labels, cost, accuracy)
     saver = tf.train.Saver()
-    save_path = saver.save(sess, save_model_path) 
-
-
+    save_path = saver.save(sess, save_model_path) #needed variable
+"""
 
 fruit_fly_tests.test_normalize(normalize)
-fruit_fly_tests.test_one_hot_encode(one_hot_encode)
+#fruit_fly_tests.test_one_hot_encode(one_hot_encode)
 fruit_fly_tests.test_nn_image_inputs(neural_net_image_input)
 fruit_fly_tests.test_nn_label_inputs(neural_net_label_input)
 fruit_fly_tests.test_nn_keep_prob_inputs(neural_net_keep_prob_input)
@@ -461,5 +516,4 @@ fruit_fly_tests.test_fully_conn(fully_conn)
 fruit_fly_tests.test_output(output)
 fruit_fly_tests.test_conv_net(conv_net)
 fruit_fly_tests.test_train_nn(train_neural_network)
-
 
