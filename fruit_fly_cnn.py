@@ -123,7 +123,10 @@ def one_hot_sklearn(labels):
     onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
     return onehot_encoded
 
-def one_hot_sklearn1(labels):
+def one_hot_sklearn2(labels):
+    """
+    one hot encoding using LabelBinarizer()
+    """
     lb = LabelBinarizer()
     return lb.fit_transform(np.array(labels))
 
