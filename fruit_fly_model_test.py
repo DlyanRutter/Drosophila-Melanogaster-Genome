@@ -2,9 +2,8 @@
 %config InlineBackend.figure_format = 'retina'
 
 import tensorflow as tf
-import pickle
+import pickle, random
 import fruit_fly_cnn
-import random
 
 # Set batch size if not already set
 try:
