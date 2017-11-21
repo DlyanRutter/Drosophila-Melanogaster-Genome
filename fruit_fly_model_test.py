@@ -3,7 +3,7 @@
 
 import tensorflow as tf
 import pickle, random
-import fruit_fly_cnn, fruit_fly_tests
+import fruit_fly_cnn, fruit_fly_function_tests
 
 # Set batch size if not already set
 try:
