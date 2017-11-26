@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, LabelBinarizer
 import fruit_fly_tests, math, pickle, os
-import __builtin__ as builtins
 
 train_dir = '/Users/dylanrutter/Downloads/train'
 test_dir = '/Users/dylanrutter/Downloads/test'
