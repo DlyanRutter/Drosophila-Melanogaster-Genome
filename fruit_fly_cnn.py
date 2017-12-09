@@ -232,7 +232,8 @@ def preprocess_and_save_data(path, normalize, one_hot_encode, n_batches=5,
                                                
 def batch_features_labels(features, labels, batch_size):
     """
-    split features and labels into batches.
+    split features and labels into batches. requires args a list of
+    features, a list of labels, and a batch size
     """
     for start in range(0, len(features), batch_size):
         end = min(start + batch_size, len(features))
